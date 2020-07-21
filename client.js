@@ -19,7 +19,10 @@ const Response = sc2.lookupType('Response');
  * 'obsAction', 'step', 'data', 'query', 'saveReplay', 'replayInfo',
  * 'availableMaps', 'saveMap', 'mapCommand', 'ping', 'debug'
  **/
-const responseTypes = Response.oneofs.response.oneof;
+let responseTypes = Response.oneofs.response.oneof;
+
+// Add the error response type, so errors can be properly handled.
+responseTypes.push("error");
 
 /** map the Request/Response types to an array of objs with meta data */
 const responses = Response.fieldsArray.map((field) => ({
