@@ -1,6 +1,9 @@
 'use strict';
+
+const g = new Function("return this")();
+
 const debug = require('debug')('sc2:debug:proto');
-const WebSocket = require('ws');
+const WebSocket = g.WebSocket || require("ws");
 const protobuf = require('protobufjs/light');
 const taskQueue = require('promise-task-queue');
 const promiseFromEvent = require('event-to-promise');
