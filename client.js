@@ -130,8 +130,13 @@ function createProtoClient() {
 
 			this._ws = createConnection(opts);
 
-			this._ws.on('message', (res) => {
+			const onMessage = async (res) => {
 				let err;
+
+				if(res.data) {
+					// TODO: Serialize this, as technically this makes it possible to handle messages out of order
+					res = new Buffer(await res.data.arrayBuffer());
+				}
 
 				//@ts-ignore i promise you it's not a string
 				const responseMessage = Response.decode(res);
@@ -161,10 +166,19 @@ function createProtoClient() {
 				} else {
 					this._protoApiQueue[responseType](err, response);
 				}
-			});
+			};
 
-			this._ws.on('error', console.warn);
-			this._ws.on('close', () => debug('CONNECTION CLOSED'));
+			if(this._ws.on) {
+				this._ws.on('message', onMessage);
+
+				this._ws.on('error', console.warn);
+				this._ws.on('close', () => debug('CONNECTION CLOSED'));
+			} else {
+				this._ws.onmessage = onMessage;
+
+				this._ws.onerror = console.warn;
+				this._ws.onclose = () => debug('CONNECTION CLOSED');
+			}
 
 			await promiseFromEvent(this._ws, 'open');
 
